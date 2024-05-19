@@ -78,7 +78,7 @@ int main(void) {
 
     // Play a chord
     printf("Play chord\n");
-    addChordNote(A.frequency, 523, 50); // A4 note at 50% volume
+    addChordNote(A.frequency, 50); // A4 note at 50% volume
     addChordNote(523, 50); // C5 note at 50% volume
     addChordNote(587, 50); // D5 note at 50% volume
     __delay_cycles(3000000); // Delay for a while
