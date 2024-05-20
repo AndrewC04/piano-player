@@ -2,6 +2,8 @@
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <stdio.h>
 #include <i2c_lcd.h>
+#include <math.h>
+#include <string.h>
 // I2C LCD Library found https://github.com/hunterhedges-zz/I2cLcd
 
 // define GPIO pins
@@ -18,8 +20,6 @@
 uint16_t currentFreq[MAX_NOTES] = {0};
 uint8_t currentVolume[MAX_NOTES] = {0};
 uint8_t notesPlayed = 0;
-
-uint16_t i = 0; 
 
 typedef struct note_t {
     unsigned int frequency;
@@ -103,6 +103,33 @@ int main(void) {
         if(!MAP_GPIO_getInputPinValue(C_SHARP.port, C_SHARP.pin)) {
             printf("%s played\n", C_SHARP.name);
         }
+        if(!MAP_GPIO_getInputPinValue(D.port, D.pin)) {
+            printf("%s played\n", D.name);
+        }
+        if(!MAP_GPIO_getInputPinValue(E_FLAT.port, E_FLAT.pin)) {
+            printf("%s played\n", E_FLAT.name);
+        }
+        if(!MAP_GPIO_getInputPinValue(E.port, E.pin)) {
+            printf("%s played\n", E.name);
+        }
+        if(!MAP_GPIO_getInputPinValue(F.port, F.pin)) {
+            printf("%s played\n", F.name);
+        }
+        if(!MAP_GPIO_getInputPinValue(F_SHARP.port, F_SHARP.pin)) {
+            printf("%s played\n", F_SHARP.name);
+        }
+        if(!MAP_GPIO_getInputPinValue(G.port, G.pin)) {
+            printf("%s played\n", G.name);
+        }
+        if(!MAP_GPIO_getInputPinValue(G_SHARP.port, G_SHARP.pin)) {
+            printf("%s played\n", G_SHARP.name);
+        }
+        if(!MAP_GPIO_getInputPinValue(A.port, A.pin)) {
+            printf("%s played\n", A.name);
+        }
+        if(!MAP_GPIO_getInputPinValue(B.port, B.pin)) {
+            printf("%s played\n", B.name);
+        }
     }
 }
 
@@ -142,6 +169,7 @@ void playChord() {
     uint32_t totalPeriod = 0;
     uint32_t totalDutyCycle = 0;
 
+    uint16_t i = 0;     
     for(i = 0; i < notesPlayed; i++) {
         uint16_t period = 3000000 / currentFreq[i];
         uint16_t dutyCycle = (period * currentVolume[i]) / 100;
@@ -171,6 +199,7 @@ void addChordNote(uint16_t frequency, uint8_t volume) {
 }
 
 void removeChordNote(uint16_t frequency) {
+    uint16_t i = 0; 
     for(i = 0; i < notesPlayed; i++) {
         if(currentFreq[i] == frequency) {
             uint16_t j = 0;
