@@ -28,6 +28,18 @@ typedef struct note_t {
     char* name;
 }Note;
 
+typedef struct {
+    char *name;
+    int intervals[3]; // Major and minor triads have 3 notes
+} Chord;
+
+// Define basic chord types
+Chord chords[NUM_CHORDS] = {
+    {"Major", {0, 4, 7}}, // Root, Major third, Perfect fifth
+    {"Minor", {0, 3, 7}}, // Root, Minor third, Perfect fifth
+    {"Diminished", {0, 3, 6}} // Root, Minor third, Diminished fifth
+};
+
 //Notes for Middle Frequency
 Note C = {262, GPIO_PORT_P3, GPIO_PIN7, "C"};
 Note C_SHARP = {277, GPIO_PORT_P3, GPIO_PIN5, "C#"};
@@ -48,6 +60,10 @@ void stopTone(void);
 void playChord(void);
 void addChordNote(uint16_t frequency, uint8_t volume);
 void removeChordNote(uint16_t frequency);
+char* findClosestNote(float frequency);
+int findInterval(char* note1, char* note2);
+char* determineChord(char* note1, char* note2, char* note3);
+
 
 
 int main(void) {
@@ -90,6 +106,19 @@ int main(void) {
     __delay_cycles(3000000); // Delay for a while
     stopTone();
 
+    // Example frequencies for a C major chord (C4, E4, G4)
+    float frequencies[] = {261.63, 329.63, 392.00};
+    int numFrequencies = sizeof(frequencies) / sizeof(frequencies[0]);
+
+    char* notesPlayed[numFrequencies];
+    for (int i = 0; i < numFrequencies; i++) {
+        notesPlayed[i] = findClosestNote(frequencies[i]);
+        printf("Frequency: %.2f Hz, Note: %s\n", frequencies[i], notesPlayed[i]);
+    }
+
+    char* chordName = determineChord(notesPlayed[0], notesPlayed[1], notesPlayed[2]);
+    printf("Chord: %s\n", chordName);
+
     //LCD Testing
     LCD_cursorOn(); //doesn't work
     LCD_backlightOff(); //only command I tested that works, only tried writeChar and writeString
@@ -100,34 +129,34 @@ int main(void) {
         if(!MAP_GPIO_getInputPinValue(C.port, C.pin)) {
             printf("%s played\n", C.name);
         }
-        if(!MAP_GPIO_getInputPinValue(C_SHARP.port, C_SHARP.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(C_SHARP.port, C_SHARP.pin)) {
             printf("%s played\n", C_SHARP.name);
         }
-        if(!MAP_GPIO_getInputPinValue(D.port, D.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(D.port, D.pin)) {
             printf("%s played\n", D.name);
         }
-        if(!MAP_GPIO_getInputPinValue(E_FLAT.port, E_FLAT.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(E_FLAT.port, E_FLAT.pin)) {
             printf("%s played\n", E_FLAT.name);
         }
-        if(!MAP_GPIO_getInputPinValue(E.port, E.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(E.port, E.pin)) {
             printf("%s played\n", E.name);
         }
-        if(!MAP_GPIO_getInputPinValue(F.port, F.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(F.port, F.pin)) {
             printf("%s played\n", F.name);
         }
-        if(!MAP_GPIO_getInputPinValue(F_SHARP.port, F_SHARP.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(F_SHARP.port, F_SHARP.pin)) {
             printf("%s played\n", F_SHARP.name);
         }
-        if(!MAP_GPIO_getInputPinValue(G.port, G.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(G.port, G.pin)) {
             printf("%s played\n", G.name);
         }
-        if(!MAP_GPIO_getInputPinValue(G_SHARP.port, G_SHARP.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(G_SHARP.port, G_SHARP.pin)) {
             printf("%s played\n", G_SHARP.name);
         }
-        if(!MAP_GPIO_getInputPinValue(A.port, A.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(A.port, A.pin)) {
             printf("%s played\n", A.name);
         }
-        if(!MAP_GPIO_getInputPinValue(B.port, B.pin)) {
+        else if(!MAP_GPIO_getInputPinValue(B.port, B.pin)) {
             printf("%s played\n", B.name);
         }
     }
@@ -213,4 +242,49 @@ void removeChordNote(uint16_t frequency) {
         }
     }
     printf("Note not found");
+}
+
+// Function to find the closest note to a given frequency
+char* findClosestNote(float frequency) {
+    float minDiff = fabs(frequency - notes[0].frequency);
+    int minIndex = 0;
+
+    for (int i = 1; i < NUM_NOTES; i++) {
+        float diff = fabs(frequency - notes[i].frequency);
+        if (diff < minDiff) {
+            minDiff = diff;
+            minIndex = i;
+        }
+    }
+
+    return notes[minIndex].name;
+}
+
+// Function to find the interval between two notes
+int findInterval(char* note1, char* note2) {
+    int index1 = -1, index2 = -1;
+    for (int i = 0; i < NUM_NOTES; i++) {
+        if (strcmp(note1, notes[i].name) == 0) {
+            index1 = i;
+        }
+        if (strcmp(note2, notes[i].name) == 0) {
+            index2 = i;
+        }
+    }
+    return (index2 - index1 + 12) % 12;
+}
+
+// Function to determine the chord from the notes
+char* determineChord(char* note1, char* note2, char* note3) {
+    int intervals[2];
+    intervals[0] = findInterval(note1, note2);
+    intervals[1] = findInterval(note1, note3);
+
+    for (int i = 0; i < NUM_CHORDS; i++) {
+        if ((intervals[0] == chords[i].intervals[1] && intervals[1] == chords[i].intervals[2]) ||
+            (intervals[0] == chords[i].intervals[2] && intervals[1] == chords[i].intervals[1])) {
+            return chords[i].name;
+        }
+    }
+    return "Unknown";
 }
