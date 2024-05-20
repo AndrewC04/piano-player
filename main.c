@@ -16,6 +16,9 @@
 // max notes a person can play
 #define MAX_NOTES 10
 
+#define NUM_CHORDS 3
+#define NUM_NOTES 12
+
 // tracking notes being played
 uint16_t currentFreq[MAX_NOTES] = {0};
 uint8_t currentVolume[MAX_NOTES] = {0};
